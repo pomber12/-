@@ -1,0 +1,1717 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Десетопръстно писане</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=PT+Mono&family=PT+Sans:wght@400;700&display=swap"
+    />
+    <!-- Шрифтове от Google Fonts (без интернет се ползва стандартен шрифт) -->
+    <style>
+      /*
+       * Стилове за тренажора
+       * Разположение: горна лента, меню с уроци вляво, в средата статистика → текст →
+       * поле за писане → клавиатура между двете ръце.
+       */
+
+      /* ---------- Цветове и шрифтове (светла тема) ---------- */
+      :root {
+        --bg: #e2e6ee;
+        --panel: #ffffff;
+        --panel2: #f1fafa;
+        --fg: #1c2230;
+        --muted: #5b6476;
+        --line: #c4cbd9;
+        --accent: #0b5ed7;
+        --key: #ffffff;
+        --keyline: #a7afbf;
+        --keyfg: #1c2230;
+        --next: #22e022;
+        --nextfg: #08300a;
+        --err: #e5484d;
+        --errbg: #fde4e5;
+        --ok: #178a43;
+        --press: #cfe0ff;
+        --handfill: #ffffff;
+        --handline: #6b7280;
+        --overlay: rgba(226, 230, 238, 0.92);
+        --shadow: 0 2px 8px rgba(30, 40, 70, 0.16);
+        --font: "PT Sans", "Segoe UI", Arial, sans-serif;
+        --mono: "PT Mono", "Courier New", monospace;
+      }
+      /* ---------- Тъмна тема ---------- */
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #151922;
+          --panel: #1f2430;
+          --panel2: #1a2a2c;
+          --fg: #e6e9f0;
+          --muted: #9aa3b5;
+          --line: #3a4254;
+          --accent: #6ea8ff;
+          --key: #2a3040;
+          --keyline: #4a5367;
+          --keyfg: #e6e9f0;
+          --next: #2bd42b;
+          --nextfg: #04260a;
+          --err: #ff6b70;
+          --errbg: #4a2328;
+          --ok: #4fd683;
+          --press: #2c4470;
+          --handfill: #2a3040;
+          --handline: #9aa3b5;
+          --overlay: rgba(21, 25, 34, 0.92);
+          --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #151922;
+        --panel: #1f2430;
+        --panel2: #1a2a2c;
+        --fg: #e6e9f0;
+        --muted: #9aa3b5;
+        --line: #3a4254;
+        --accent: #6ea8ff;
+        --key: #2a3040;
+        --keyline: #4a5367;
+        --keyfg: #e6e9f0;
+        --next: #2bd42b;
+        --nextfg: #04260a;
+        --err: #ff6b70;
+        --errbg: #4a2328;
+        --ok: #4fd683;
+        --press: #2c4470;
+        --handfill: #2a3040;
+        --handline: #9aa3b5;
+        --overlay: rgba(21, 25, 34, 0.92);
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        color-scheme: dark;
+      }
+
+      /* ---------- Общи ---------- */
+      [hidden] {
+        display: none !important;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font);
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      a:focus-visible,
+      button:focus-visible,
+      select:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+
+      /* ---------- Горна лента ---------- */
+      header.top {
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding-block: 10px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header.top h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      header.top .opts {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      header.top select {
+        font: inherit;
+        background: var(--panel);
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 3px 6px;
+      }
+
+
+      /* ---------- Основна мрежа: меню + съдържание ---------- */
+      .wrap {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+        padding-block: 16px 40px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        max-width: 1200px;
+      }
+
+      /* ---------- Странично меню ---------- */
+      nav.side {
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 14px 14px 18px;
+        font-size: 14px;
+        position: sticky;
+        top: 12px;
+        max-height: calc(100vh - 24px);
+        overflow: auto;
+      }
+      nav.side ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      nav.side li {
+        margin: 1px 0;
+      }
+      nav.side .lesson > a {
+        display: block;
+      }
+      nav.side .lesson.open > a {
+        color: var(--fg);
+      }
+      nav.side .subs {
+        padding-left: 16px;
+        margin: 2px 0 6px;
+      }
+      nav.side .subs a {
+        display: block;
+        position: relative;
+        padding-left: 12px;
+      }
+      nav.side .subs a::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        border: 4px solid transparent;
+        border-left: 5px solid var(--keyline);
+      }
+      nav.side a.active {
+        color: var(--fg);
+        font-weight: 700;
+      }
+      nav.side .done-mark {
+        color: var(--ok);
+        font-weight: 700;
+        margin-left: 4px;
+      }
+      nav.side .sep {
+        height: 10px;
+      }
+
+
+      /* ---------- Заглавие и статистика ---------- */
+      main {
+        min-width: 0;
+      }
+      main h2 {
+        font-size: 19px;
+        margin: 6px 0 12px;
+        text-wrap: balance;
+      }
+      .stats {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--line);
+        padding: 6px 10px;
+        border-radius: 3px;
+      }
+      .stat {
+        text-align: center;
+        min-width: 48px;
+      }
+      .stat b {
+        display: block;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+        border-bottom: 2px solid var(--line);
+        padding: 0 4px;
+      }
+      .stat span {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        color: var(--muted);
+      }
+
+      /* ---------- Текст за преписване ---------- */
+      .target {
+        margin-top: 6px;
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 10px 8px;
+        font-family: var(--mono);
+        font-size: 24px;
+        line-height: 1.6;
+        max-height: calc(1.6em * 3 + 20px);
+        overflow: hidden;
+        word-break: break-word;
+        letter-spacing: 0.06em;
+      }
+      .target .c {
+        white-space: pre;
+        border-bottom: 2px solid transparent;
+      }
+      .target .c.done {
+        color: var(--muted);
+        opacity: 0.55;
+      }
+      .target .c.cur {
+        border-bottom-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+      }
+      .target .c.bad {
+        color: var(--err);
+        background: var(--errbg);
+        border-bottom-color: var(--err);
+      }
+      .target .c.miss {
+        color: var(--err);
+      }
+      .target .w {
+        white-space: nowrap;
+      }
+      .target .c.sp {
+        white-space: pre-wrap;
+      }
+
+      /* ---------- Поле за писане ---------- */
+      .inputbox {
+        position: relative;
+        margin-top: 4px;
+      }
+      textarea#typing {
+        width: 100%;
+        height: 150px;
+        resize: vertical;
+        border: 2px solid var(--accent);
+        border-radius: 4px;
+        background: var(--panel);
+        color: var(--fg);
+        font-family: var(--mono);
+        font-size: 20px;
+        padding: 8px;
+        outline: none;
+      }
+      textarea#typing.shake {
+        animation: shake 0.18s;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: none;
+        }
+        33% {
+          transform: translateX(-3px);
+        }
+        66% {
+          transform: translateX(3px);
+        }
+      }
+      .hint {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+
+      /* ---------- Клавиатура и ръце ---------- */
+      .kbarea {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .hand {
+        width: 80px;
+        flex: none;
+        color: var(--handline);
+      }
+      .kb {
+        flex: 0 1 560px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-family: var(--font);
+      }
+      .row {
+        display: flex;
+        gap: 4px;
+      }
+      .key {
+        flex: 1 1 0;
+        min-width: 0;
+        aspect-ratio: 1/0.9;
+        background: var(--key);
+        color: var(--keyfg);
+        border: 1px solid var(--keyline);
+        border-radius: 4px;
+        position: relative;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        transition: background 0.08s;
+      }
+      .key.w15 {
+        flex-grow: 1.5;
+        aspect-ratio: auto;
+      }
+      .key.w175 {
+        flex-grow: 1.75;
+        aspect-ratio: auto;
+      }
+      .key.w2 {
+        flex-grow: 2;
+        aspect-ratio: auto;
+      }
+      .key.w225 {
+        flex-grow: 2.25;
+        aspect-ratio: auto;
+      }
+      .key.w275 {
+        flex-grow: 2.75;
+        aspect-ratio: auto;
+      }
+      .key.w125 {
+        flex-grow: 1.25;
+        aspect-ratio: auto;
+      }
+      .key.space {
+        flex-grow: 6.5;
+        aspect-ratio: auto;
+      }
+      .key.gap {
+        visibility: hidden;
+      }
+      .key.dual .s {
+        position: absolute;
+        left: 5px;
+        top: 2px;
+        font-size: 11px;
+      }
+      .key.dual .n {
+        position: absolute;
+        right: 5px;
+        bottom: 2px;
+        font-size: 12px;
+      }
+      .key .letter {
+        font-size: 15px;
+      }
+      .key.home::after {
+        content: "";
+        position: absolute;
+        bottom: 3px;
+        left: 50%;
+        width: 8px;
+        margin-left: -4px;
+        border-bottom: 2px solid var(--keyline);
+      }
+
+      /* ---------- Състояния на клавишите: следващ, натиснат, грешен ---------- */
+      .key.next {
+        background: var(--next);
+        color: var(--nextfg);
+        border-color: var(--next);
+      }
+      .key.pressed {
+        background: var(--press);
+      }
+      .key.wrong {
+        background: var(--err);
+        color: #fff;
+        border-color: var(--err);
+      }
+
+
+      /* ---------- Прозорец с резултата ---------- */
+      .result {
+        position: absolute;
+        inset: 0;
+        background: var(--overlay);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        border-radius: 4px;
+      }
+      .result .card {
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 16px 22px;
+        text-align: center;
+        max-width: 94%;
+      }
+      .result h3 {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+      .result .nums {
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 8px 0 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .result .nums div b {
+        display: block;
+        font-size: 22px;
+      }
+      .result .nums div span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .btns {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      button.btn {
+        font: inherit;
+        font-weight: 700;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #fff;
+        border-radius: 4px;
+        padding: 6px 14px;
+        cursor: pointer;
+      }
+      button.btn.ghost {
+        background: transparent;
+        color: var(--accent);
+      }
+      .trainer {
+        position: relative;
+      }
+
+      /* ---------- Помощен текст и начална страница ---------- */
+      .below {
+        margin-top: 22px;
+        max-width: 68ch;
+      }
+      .below h3 {
+        font-size: 16px;
+        margin: 0 0 6px;
+      }
+      .below p {
+        margin: 0 0 10px;
+      }
+      .home-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 10px;
+        margin: 14px 0;
+      }
+      .home-grid a {
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 10px 12px;
+        border-radius: 4px;
+        display: block;
+      }
+      .home-grid a small {
+        display: block;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+      kbd {
+        font-family: var(--mono);
+        border: 1px solid var(--keyline);
+        border-bottom-width: 2px;
+        border-radius: 3px;
+        padding: 0 4px;
+        background: var(--key);
+      }
+
+
+      /* ---------- Телефон и тесен екран ---------- */
+      @media (max-width: 820px) {
+        .wrap {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        nav.side {
+          position: static;
+          max-height: 220px;
+        }
+        .hand {
+          display: none;
+        }
+        .target {
+          font-size: 19px;
+        }
+        .key {
+          font-size: 11px;
+        }
+        .key .letter {
+          font-size: 13px;
+        }
+        .key.dual .s {
+          font-size: 9px;
+          left: 2px;
+        }
+        .key.dual .n {
+          font-size: 10px;
+          right: 2px;
+        }
+      }
+
+      /* ---------- Без анимации, ако потребителят го е избрал ---------- */
+      @media (prefers-reduced-motion: reduce) {
+        textarea#typing.shake {
+          animation: none;
+        }
+        .key {
+          transition: none;
+        }
+      }
+
+      /* Ред „Най-добър резултат“ в прозореца с резултата */
+      .result .best {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Горна лента -->
+    <header class="top">
+      <h1>Десетопръстно писане · БДС</h1>
+      <div class="opts">
+        <label for="layoutMode">Въвеждане:</label>
+        <select id="layoutMode">
+          <option value="pos">БДС по позиция (всяка клавиатура)</option>
+          <option value="sys">Символ от системната подредба</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Меню вляво и съдържание (попълват се от script.js) -->
+    <div class="wrap">
+      <nav class="side" id="side" aria-label="Уроци"></nav>
+      <main id="main"></main>
+    </div>
+
+    <!-- Цялата логика на играта -->
+    <script>
+      /*
+       * Тренажор за десетопръстно писане (БДС клавиатура)
+       * ------------------------------------------------
+       * Съдържание на файла:
+       *   1. Клавиатура      – подредба на клавишите и кой пръст натиска всеки клавиш
+       *   2. Уроци           – списък с уроци, думи и текстове за теста за скорост
+       *   3. Генериране      – създаване на текст за всяко упражнение
+       *   4. Ръце            – рисуване на ръцете като SVG
+       *   5. Състояние       – запазен напредък и настройки
+       *   6. Навигация       – адрес (#l1-0, #speed) и страничното меню
+       *   7. Изгледи         – началната страница и екранът за писане
+       *   8. Писане          – обработка на натиснатите клавиши
+       *   9. Статистика      – скорост, точност, време и край на упражнението
+       *  10. Стартиране
+       */
+      (() => {
+        "use strict";
+
+        /* =====================================================================
+         * 1. КЛАВИАТУРА
+         * ===================================================================== */
+
+        /**
+         * Редовете на клавиатурата.
+         * Всеки клавиш е: [код, символ, символ със Shift, CSS клас за ширина]
+         * - "код" е физическото място на клавиша (event.code), напр. "KeyA".
+         * - За буквите символът със Shift не се пише – той е главната буква.
+         * - Кодове, започващи с "_", са празни места за подравняване.
+         */
+        const KEYBOARD_ROWS = [
+          [
+            ["Backquote", "`", "~"],
+            ["Digit1", "1", "!"],
+            ["Digit2", "2", "?"],
+            ["Digit3", "3", "+"],
+            ["Digit4", "4", '"'],
+            ["Digit5", "5", "%"],
+            ["Digit6", "6", "="],
+            ["Digit7", "7", ":"],
+            ["Digit8", "8", "/"],
+            ["Digit9", "9", "–"],
+            ["Digit0", "0", "№"],
+            ["Minus", "-", "$"],
+            ["Equal", ".", "€"],
+            ["Backspace", "Back", null, "w2"],
+          ],
+          [
+            ["Tab", "Tab", null, "w15"],
+            ["KeyQ", ",", "ы"],
+            ["KeyW", "у"],
+            ["KeyE", "е"],
+            ["KeyR", "и"],
+            ["KeyT", "ш"],
+            ["KeyY", "щ"],
+            ["KeyU", "к"],
+            ["KeyI", "с"],
+            ["KeyO", "д"],
+            ["KeyP", "з"],
+            ["BracketLeft", "ц"],
+            ["BracketRight", ";", "§"],
+            ["Backslash", "(", ")", "w15"],
+          ],
+          [
+            ["CapsLock", "Caps", null, "w175"],
+            ["KeyA", "ь"],
+            ["KeyS", "я"],
+            ["KeyD", "а"],
+            ["KeyF", "о"],
+            ["KeyG", "ж"],
+            ["KeyH", "г"],
+            ["KeyJ", "т"],
+            ["KeyK", "н"],
+            ["KeyL", "в"],
+            ["Semicolon", "м"],
+            ["Quote", "ч"],
+            ["Enter", "Enter", null, "w225"],
+          ],
+          [
+            ["ShiftLeft", "Shift", null, "w225"],
+            ["KeyZ", "ю"],
+            ["KeyX", "й"],
+            ["KeyC", "ъ"],
+            ["KeyV", "э"],
+            ["KeyB", "ф"],
+            ["KeyN", "х"],
+            ["KeyM", "п"],
+            ["Comma", "р"],
+            ["Period", "л"],
+            ["Slash", "б"],
+            ["ShiftRight", "Shift", null, "w275"],
+          ],
+          [
+            ["ControlLeft", "Ctrl", null, "w15"],
+            ["_gap1", "", null, "w15 gap"],
+            ["AltLeft", "Alt", null, "w125"],
+            ["Space", "", null, "space"],
+            ["AltRight", "AltGr", null, "w125"],
+            ["_gap2", "", null, "w15 gap"],
+            ["ControlRight", "Ctrl", null, "w15"],
+          ],
+        ];
+
+        /** Клавишите с чертичка, по които пръстите се ориентират (о и т). */
+        const HOME_KEYS = new Set(["KeyF", "KeyJ"]);
+
+        /**
+         * Пръсти: 0–4 са лявата ръка (кутре → палец),
+         *         5–9 са дясната ръка (палец → кутре).
+         */
+        const FINGER = {
+          LEFT_PINKY: 0,
+          LEFT_RING: 1,
+          LEFT_MIDDLE: 2,
+          LEFT_INDEX: 3,
+          LEFT_THUMB: 4,
+          RIGHT_THUMB: 5,
+          RIGHT_INDEX: 6,
+          RIGHT_MIDDLE: 7,
+          RIGHT_RING: 8,
+          RIGHT_PINKY: 9,
+        };
+
+        /** Кои клавиши натиска всеки пръст. */
+        const KEYS_BY_FINGER = {
+          [FINGER.LEFT_PINKY]: ["Backquote", "Digit1", "KeyQ", "KeyA", "KeyZ", "Tab", "CapsLock", "ShiftLeft", "ControlLeft"],
+          [FINGER.LEFT_RING]: ["Digit2", "KeyW", "KeyS", "KeyX"],
+          [FINGER.LEFT_MIDDLE]: ["Digit3", "KeyE", "KeyD", "KeyC"],
+          [FINGER.LEFT_INDEX]: ["Digit4", "Digit5", "KeyR", "KeyT", "KeyF", "KeyG", "KeyV", "KeyB"],
+          [FINGER.LEFT_THUMB]: ["AltLeft"],
+          [FINGER.RIGHT_THUMB]: ["Space"],
+          [FINGER.RIGHT_INDEX]: ["Digit6", "Digit7", "KeyY", "KeyU", "KeyH", "KeyJ", "KeyN", "KeyM"],
+          [FINGER.RIGHT_MIDDLE]: ["Digit8", "KeyI", "KeyK", "Comma"],
+          [FINGER.RIGHT_RING]: ["Digit9", "KeyO", "KeyL", "Period", "AltRight"],
+          [FINGER.RIGHT_PINKY]: [
+            "Digit0", "Minus", "Equal", "Backspace", "KeyP", "BracketLeft", "BracketRight",
+            "Backslash", "Semicolon", "Quote", "Enter", "Slash", "ShiftRight", "ControlRight",
+          ],
+        };
+
+        const isLeftHand = (finger) => finger <= FINGER.LEFT_THUMB;
+        const isLetter = (ch) => /[а-яѐ-ӿ]/i.test(ch);
+
+        // Таблици за бързо търсене, построени от данните по-горе:
+        const fingerOfKey = {}; // код на клавиш → пръст
+        const symbolsOfKey = {}; // код на клавиш → { normal, shifted }
+        const keyOfChar = {}; // символ → { code, shift }
+
+        for (const [finger, codes] of Object.entries(KEYS_BY_FINGER)) {
+          for (const code of codes) fingerOfKey[code] = Number(finger);
+        }
+
+        for (const [code, normal, shiftedSymbol] of KEYBOARD_ROWS.flat()) {
+          const isGapOrSpecialKey = code.startsWith("_") || normal.length !== 1;
+          if (isGapOrSpecialKey) continue;
+
+          const shifted = shiftedSymbol || (isLetter(normal) ? normal.toUpperCase() : null);
+          symbolsOfKey[code] = { normal, shifted };
+          keyOfChar[normal] = { code, shift: false };
+          if (shifted) keyOfChar[shifted] = { code, shift: true };
+        }
+        symbolsOfKey.Space = { normal: " ", shifted: " " };
+        keyOfChar[" "] = { code: "Space", shift: false };
+
+        /* =====================================================================
+         * 2. УРОЦИ
+         * ===================================================================== */
+
+        /** Реда, в който се учат буквите. Урок N добавя N-тата група. */
+        const LETTER_GROUPS = [
+          "ьяаотнвм", // Урок 1: изходен ред
+          "еи",
+          "кс",
+          "жг",
+          "уд",
+          "шщ",
+          "зцч",
+          "ър",
+          "эх",
+          "фп",
+          "йл",
+          "юб", // Урок 12
+        ];
+
+        const ALL_LETTERS = LETTER_GROUPS.join("");
+
+        /**
+         * Всички уроци. "mode" определя как се генерира текстът:
+         * letters – само малки букви, caps – главни букви, punct – препинателни знаци,
+         * digits – цифри и символи.
+         */
+        const LESSONS = [
+          ...LETTER_GROUPS.map((letters, i) => ({
+            title: i === 0 ? "Изходен ред" : [...letters].map((c) => c.toUpperCase()).join(", "),
+            newKeys: letters,
+            mode: "letters",
+          })),
+          { title: "Главни букви (Shift)", newKeys: "АОТНВМЕИКС", mode: "caps" },
+          { title: "Препинателни знаци", newKeys: ",.;()ы", mode: "punct" },
+          { title: "Цифри и символи", newKeys: "1234567890", mode: "digits" },
+        ];
+
+        /** Упражненията във всеки урок (индекс 0–9). */
+        const EXERCISE_TITLES = [
+          "Нови клавиши: ", // + името на урока
+          "Упражнение с нови клавиши 1",
+          "Упражнение с нови клавиши 2",
+          "Упражнение с нови клавиши 3",
+          "Упражнение с клавиши 1",
+          "Упражнение с клавиши 2",
+          "Упражнение с клавиши 3",
+          "Упражнение с думи",
+          "Допълнително упражнение с клавиши",
+          "Допълнително упражнение с думи",
+        ];
+
+        function exerciseTitle(lessonIndex, exerciseIndex) {
+          if (exerciseIndex === 0) return EXERCISE_TITLES[0] + LESSONS[lessonIndex].title;
+          return EXERCISE_TITLES[exerciseIndex];
+        }
+
+        /** Думи за упражненията. Всяко упражнение ползва само думите от вече научени букви. */
+        const WORDS = [
+          ...new Set(
+            `
+            мама тата вата нота тон атом она ватман том мото нова вана отава мат нам вам там тя то те
+            и е а в на от за да се не по че ще с със ние вие той аз ти име мене тема мента вина вино
+            нива нима мина метан ето една един баба дядо дом къща вода огън земя небе слънце луна
+            звезда море река планина гора дърво лист цвете трева поле град село улица път мост врата
+            прозорец стая маса стол легло книга тетрадка молив химикал училище учител ученик урок
+            задача отговор въпрос дума буква текст писане клавиш клавиатура екран мишка компютър
+            програма игра време час минута ден нощ сутрин вечер седмица месец година зима пролет лято
+            есен топло студено хубаво лошо голям малък нов стар бял черен червен зелен син жълт бърз
+            бавен добър умен весел тъжен хляб сирене мляко месо риба ябълка круша грозде диня пъпеш
+            домат краставица картоф ориз супа чай кафе захар сол бира обяд вечеря закуска майка баща
+            брат сестра дъщеря приятел приятелка човек хора дете деца мъж жена момче момиче куче котка
+            кон крава овца коза птица мечка вълк лисица заек мравка пчела ръка крак глава око ухо нос
+            уста зъб коса сърце тяло работа почивка пари магазин пазар банка болница лекар шофьор кола
+            автобус влак самолет кораб колело гара летище мотив метод ваза зона ток мак рак так как
+            сок сом сам сега тук там вчера утре днес много малко всичко нищо винаги никога може трябва
+            искам мога знам обичам пиша чета говоря слушам гледам ходя тичам спя ям пия правя казвам
+            мисля питам отивам идвам живея уча играя пея танцувам рисувам плувам юли юни юг юнак любов
+            ютия край май мой твой свой герой още нещо щука щастие шапка шум шише цар цена цял цирк
+            чаша чадър чичо чорап филм фабрика фенер снимка хотел химн плод рибар лале тенис ваканция
+            книжка вестник писмо поща марка адрес телефон радио музика песен театър кино картина
+            изкуство история наука език говор знание мисъл идея сила воля мечта надежда радост мир
+            свобода истина правда дружба семейство родина отечество столица държава народ
+            `
+              .split(/\s+/)
+              .filter(Boolean),
+          ),
+        ];
+
+        /** Текстове за „Тест за скорост“. */
+        const SPEED_TEXTS = [
+          "Десетопръстното писане е умение, което се усвоява с търпение и редовни упражнения. " +
+            "Пишете бавно, но без грешки, и скоростта ще дойде сама. Гледайте екрана, а не клавиатурата.",
+          "Всяка сутрин баба ми пие чай с мед и чете вестник на терасата. " +
+            "После полива цветята в градината и разказва на котката какво ще готви за обяд.",
+          "Планините в България са красиви през всеки сезон. През зимата хората карат ски, " +
+            "а през лятото ходят на походи, спят в хижи и пият студена вода от изворите.",
+          "Компютърът е инструмент, който ни помага да работим по-бързо. Когато пишем без да " +
+            "гледаме клавишите, мислите ни остават върху текста, а не върху буквите.",
+        ];
+
+        /* =====================================================================
+         * 3. ГЕНЕРИРАНЕ НА ТЕКСТ
+         * ===================================================================== */
+
+        /** Случаен елемент от масив или низ. */
+        const randomItem = (list) => list[Math.floor(Math.random() * list.length)];
+
+        /** Случайно цяло число от min до max (включително). */
+        const randomInt = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+
+        /** Главна първа буква. */
+        const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
+
+        /** Всички букви, научени до урока включително. */
+        function lettersUpTo(lessonIndex) {
+          const count = Math.min(lessonIndex + 1, LETTER_GROUPS.length);
+          return LETTER_GROUPS.slice(0, count).join("");
+        }
+
+        /**
+         * Случайни „думи“ от дадени букви, напр. "атно ваям ...".
+         * @param {string} chars       буквите, от които се избира
+         * @param {number} count       брой групи
+         * @param {number} minLength   най-малка дължина на група
+         * @param {number} maxLength   най-голяма дължина на група
+         * @param {string} [mustUse]   всяка група съдържа поне една от тези букви
+         */
+        function randomGroups(chars, count, minLength, maxLength, mustUse) {
+          const result = [];
+          for (let i = 0; i < count; i++) {
+            const length = randomInt(minLength, maxLength);
+            const group = Array.from({ length }, () => randomItem(chars));
+
+            const hasRequired = !mustUse || group.some((c) => mustUse.includes(c));
+            if (!hasRequired) group[randomInt(0, length - 1)] = randomItem(mustUse);
+
+            result.push(group.join(""));
+          }
+          return result;
+        }
+
+        /**
+         * Истински думи, съставени само от позволените букви.
+         * Ако такива думи са твърде малко, връща случайни групи букви.
+         * @param {string} allowed    позволени букви
+         * @param {number} count      брой думи
+         * @param {string} [prefer]   половината думи съдържат някоя от тези букви (новите)
+         */
+        function pickWords(allowed, count, prefer) {
+          const candidates = WORDS.filter((word) => [...word].every((c) => allowed.includes(c)));
+          if (candidates.length < 6) return randomGroups(allowed, count, 3, 5, prefer);
+
+          const preferred = prefer
+            ? candidates.filter((word) => [...word].some((c) => prefer.includes(c)))
+            : [];
+
+          const result = [];
+          for (let i = 0; i < count; i++) {
+            const usePreferred = preferred.length > 0 && Math.random() < 0.5;
+            result.push(randomItem(usePreferred ? preferred : candidates));
+          }
+          return result;
+        }
+
+        /** Добавя главни букви, препинателни знаци или числа според вида на урока. */
+        function decorateWords(words, mode) {
+          return words.map((word) => {
+            const r = Math.random();
+
+            if (mode === "caps") {
+              return r < 0.6 ? capitalize(word) : word;
+            }
+
+            if (mode === "punct") {
+              if (r < 0.22) return word + ",";
+              if (r < 0.38) return word + ".";
+              if (r < 0.46) return word + ";";
+              if (r < 0.56) return "(" + word + ")";
+              if (r < 0.62) return word + "ы";
+              return word;
+            }
+
+            if (mode === "digits") {
+              const number = String(randomInt(1, 9999));
+              if (r < 0.3) return number;
+              if (r < 0.38) return number + "%";
+              if (r < 0.45) return "№" + number;
+              if (r < 0.52) return number + "$";
+              if (r < 0.58) return number + "€";
+              if (r < 0.63) return word + "!";
+              if (r < 0.68) return word + "?";
+              if (r < 0.72) return number + "+" + randomInt(1, 99);
+              return word;
+            }
+
+            return word;
+          });
+        }
+
+        /** Текст за упражнение exerciseIndex (0–9) от урок lessonIndex (0–14). */
+        function makeExerciseText(lessonIndex, exerciseIndex) {
+          const lesson = LESSONS[lessonIndex];
+          const learned = lettersUpTo(lessonIndex);
+          const newKeys = lesson.newKeys;
+          const homeLetters = "аотн";
+          const ex = exerciseIndex;
+
+          if (lesson.mode === "letters") {
+            // 0: новите клавиши по двойки – "ьь яя аа ..."
+            if (ex === 0) {
+              const pairs = [...newKeys].map((c) => c + c);
+              if (lessonIndex === 0) return [...pairs, ...pairs, ...pairs].join(" ");
+
+              const mixed = [...newKeys].flatMap((c) => [
+                randomItem(homeLetters) + c,
+                c + randomItem(homeLetters),
+                c + c + c,
+              ]);
+              return [...pairs, ...pairs, ...mixed, ...pairs].join(" ");
+            }
+            // 1–3: новите клавиши, смесени с вече научени
+            if (ex <= 3) {
+              const chars = ex === 1 ? newKeys + homeLetters : newKeys + learned;
+              return randomGroups(chars, 16, 2, ex + 2, newKeys).join(" ");
+            }
+            // 4–6: всички научени клавиши, все по-дълги групи
+            if (ex <= 6) return randomGroups(learned, 16, ex - 2, ex).join(" ");
+            // 7: думи
+            if (ex === 7) return pickWords(learned, 16, newKeys).join(" ");
+            // 8: допълнително с клавиши
+            if (ex === 8) return randomGroups(learned, 24, 4, 7, newKeys).join(" ");
+            // 9: допълнително с думи
+            return pickWords(learned, 30, newKeys).join(" ");
+          }
+
+          // Уроци 13–15 (главни букви, знаци, цифри)
+          if (ex === 0) {
+            if (lesson.mode === "caps") {
+              const pairs = [...newKeys].map((c) => c + c.toLowerCase());
+              return [...pairs, ...pairs, ...pairs].join(" ");
+            }
+            if (lesson.mode === "punct") {
+              const samples = ["аа,", "оо.", "тт;", "(нн)", "ыы", "вв,", "мм.", "(ее)"];
+              return [...samples, ...samples, ...samples].join(" ");
+            }
+            const pairs = [...newKeys].map((c) => c + c);
+            const symbols = ["12", "34", "56", "78", "90", "!1", "?2", "+3", "%5", "№0"];
+            return [...pairs, ...pairs, ...symbols].join(" ");
+          }
+          if (ex <= 6) {
+            const maxLength = 3 + (ex % 3) + 1;
+            return decorateWords(randomGroups(ALL_LETTERS, 16, 3, maxLength), lesson.mode).join(" ");
+          }
+          if (ex === 8) {
+            return decorateWords(randomGroups(ALL_LETTERS, 24, 4, 7), lesson.mode).join(" ");
+          }
+          const wordCount = ex === 7 ? 16 : 30;
+          return decorateWords(pickWords(ALL_LETTERS, wordCount), lesson.mode).join(" ");
+        }
+
+        /* =====================================================================
+         * 4. РЪЦЕ (SVG)
+         * ===================================================================== */
+
+        // Координати на лявата ръка: кутре, безименен, среден, показалец, палец.
+        // Дясната ръка е огледален образ на лявата.
+        const FINGER_TIPS = [[15, 36], [31, 15], [50, 9], [68, 17], [94, 56]];
+        const FINGER_BASES = [[25, 72], [37, 66], [50, 64], [63, 66], [72, 84]];
+
+        /** Пръстите като дебели линии с дадени ширина и цвят. */
+        function fingerLines(width, color) {
+          return FINGER_TIPS.map((tip, i) => {
+            const base = FINGER_BASES[i];
+            return `<line x1="${base[0]}" y1="${base[1]}" x2="${tip[0]}" y2="${tip[1]}"
+                          stroke="${color}" stroke-width="${width}" stroke-linecap="round"/>`;
+          }).join("");
+        }
+
+        /**
+         * SVG на една ръка. Рисува се два пъти: първо по-дебело с цвета на контура,
+         * после по-тънко с цвета на запълването – така остава само очертанието.
+         * @param {"L"|"R"} side
+         */
+        function handSvg(side) {
+          const mirror = side === "R" ? 'transform="translate(104 0) scale(-1 1)"' : "";
+          return `
+            <svg viewBox="0 0 104 112" class="hand" aria-hidden="true">
+              <g ${mirror}>
+                <rect x="19" y="58" width="60" height="50" rx="20" fill="var(--handline)"/>
+                ${fingerLines(13, "var(--handline)")}
+                <rect x="20.5" y="59.5" width="57" height="47" rx="19" fill="var(--handfill)"/>
+                ${fingerLines(10, "var(--handfill)")}
+                <circle class="dot" r="6.5" cx="0" cy="0" visibility="hidden"
+                        fill="var(--next)" stroke="var(--nextfg)" stroke-width="1.5"/>
+              </g>
+            </svg>`;
+        }
+
+        /* =====================================================================
+         * 5. СЪСТОЯНИЕ И НАСТРОЙКИ
+         * ===================================================================== */
+
+        const $ = (selector) => document.querySelector(selector);
+
+        const STORAGE_PROGRESS = "bds-progress";
+        const STORAGE_INPUT_MODE = "bds-mode";
+
+        /** Чете от localStorage, без да се чупи, ако браузърът го блокира. */
+        function storageGet(key, fallback) {
+          try {
+            const value = localStorage.getItem(key);
+            return value === null ? fallback : value;
+          } catch {
+            return fallback;
+          }
+        }
+        function storageSet(key, value) {
+          try {
+            localStorage.setItem(key, value);
+          } catch {
+            /* без запазване */
+          }
+        }
+
+        /** Най-добрите резултати: { "l1-0": { wpm: 25, acc: 97 }, ... } */
+        let progress = {};
+        try {
+          progress = JSON.parse(storageGet(STORAGE_PROGRESS, "{}")) || {};
+        } catch {
+          progress = {};
+        }
+        const saveProgress = () => storageSet(STORAGE_PROGRESS, JSON.stringify(progress));
+
+        /**
+         * Начин на въвеждане:
+         *  "pos" – символът се взима по мястото на клавиша (БДС на всяка клавиатура)
+         *  "sys" – символът се взима от подредбата на операционната система
+         */
+        let inputMode = storageGet(STORAGE_INPUT_MODE, "pos");
+
+        const layoutSelect = $("#layoutMode");
+        layoutSelect.value = inputMode;
+        layoutSelect.addEventListener("change", () => {
+          inputMode = layoutSelect.value;
+          storageSet(STORAGE_INPUT_MODE, inputMode);
+          $("#typing")?.focus();
+        });
+
+        /** Текущата страница: { kind: "home" } | { kind: "speed" } | { kind: "ex", lesson, exercise } */
+        let route = { kind: "home" };
+
+        /**
+         * Текущото упражнение (null на началната страница):
+         *  text      – текстът за преписване
+         *  pos       – колко знака са написани вярно
+         *  errors    – брой грешни натискания
+         *  wrongAt   – позиция с текуща грешка (-1, ако няма)
+         *  missed    – позиции, на които е имало грешка
+         *  startTime / endTime – в милисекунди
+         *  done      – дали е завършено
+         *  spans     – <span> елементите на всеки знак
+         */
+        let exercise = null;
+        let timerId = null;
+
+        /* =====================================================================
+         * 6. НАВИГАЦИЯ
+         * ===================================================================== */
+
+        /** Чете адреса след # : "#l3-5" = урок 3, упражнение 5; "#speed" = тест. */
+        function parseHash() {
+          const hash = location.hash.replace("#", "");
+
+          const match = hash.match(/^l(\d+)(?:-(\d+))?$/);
+          if (match) {
+            const lesson = Number(match[1]) - 1;
+            const ex = Number(match[2] || 0);
+            if (LESSONS[lesson] && ex >= 0 && ex < EXERCISE_TITLES.length) {
+              return { kind: "ex", lesson, exercise: ex };
+            }
+          }
+          if (hash === "speed") return { kind: "speed" };
+          return { kind: "home" };
+        }
+
+        const exerciseHash = (lesson, ex) => `l${lesson + 1}-${ex}`;
+        const routeKey = (r) => (r.kind === "ex" ? exerciseHash(r.lesson, r.exercise) : r.kind);
+        const doneMark = (isDone) => (isDone ? '<span class="done-mark">✓</span>' : "");
+        const activeClass = (isActive) => (isActive ? "active" : "");
+
+        /** Страничното меню. Отвореният урок показва списъка си с упражнения. */
+        function renderSidebar() {
+          const openLesson = route.kind === "ex" ? route.lesson : -1;
+
+          const lessonItems = LESSONS.map((lesson, li) => {
+            const allDone = EXERCISE_TITLES.every((_, ei) => progress[exerciseHash(li, ei)]);
+
+            let subList = "";
+            if (li === openLesson) {
+              const items = EXERCISE_TITLES.map((_, ei) => {
+                const hash = exerciseHash(li, ei);
+                return `
+                  <li>
+                    <a href="#${hash}" class="${activeClass(route.exercise === ei)}">
+                      ${exerciseTitle(li, ei)}${doneMark(progress[hash])}
+                    </a>
+                  </li>`;
+              }).join("");
+              subList = `<ul class="subs">${items}</ul>`;
+            }
+
+            return `
+              <li class="lesson ${li === openLesson ? "open" : ""}">
+                <a href="#${exerciseHash(li, 0)}">Урок ${li + 1}</a>${doneMark(allDone)}
+                ${subList}
+              </li>`;
+          }).join("");
+
+          $("#side").innerHTML = `
+            <ul>
+              <li><a href="#home" class="${activeClass(route.kind === "home")}">Начало</a></li>
+              ${lessonItems}
+              <li class="sep"></li>
+              <li><a href="#speed" class="${activeClass(route.kind === "speed")}">Тест за скорост</a></li>
+            </ul>`;
+
+          const active = $("#side a.active");
+          if (active && window.innerWidth > 820) active.scrollIntoView({ block: "nearest" });
+        }
+
+        /* =====================================================================
+         * 7. ИЗГЛЕДИ
+         * ===================================================================== */
+
+        function renderHome() {
+          stopTimer();
+          exercise = null;
+
+          const lessonCards = LESSONS.map(
+            (lesson, li) => `
+              <a href="#${exerciseHash(li, 0)}">
+                Урок ${li + 1}: ${lesson.title}
+                <small>${[...lesson.newKeys].join(" ")}</small>
+              </a>`,
+          ).join("");
+
+          $("#main").innerHTML = `
+            <h2>Научете се да пишете с десет пръста на БДС клавиатура</h2>
+            <div class="below" style="margin-top:0">
+              <p>Курсът има 15 урока. Всеки урок добавя нови клавиши и съдържа десет упражнения:
+                 първо новите клавиши, после комбинации, думи и допълнителна практика.</p>
+              <p>Поставете пръстите на изходния ред: левите на <kbd>ь</kbd> <kbd>я</kbd> <kbd>а</kbd>
+                 <kbd>о</kbd>, десните на <kbd>т</kbd> <kbd>н</kbd> <kbd>в</kbd> <kbd>м</kbd>.
+                 Палците почиват на интервала. Зеленият клавиш и точката върху ръката показват
+                 какво и с кой пръст да натиснете.</p>
+            </div>
+            <div class="home-grid">
+              ${lessonCards}
+              <a href="#speed">Тест за скорост<small>свободен текст</small></a>
+            </div>`;
+        }
+
+        /** Екранът за писане: статистика, текст, поле, клавиатура и ръце. */
+        function renderTrainer(title, text) {
+          $("#main").innerHTML = `
+            <h2>${title}</h2>
+            <div class="trainer" id="trainer">
+              <div class="stats">
+                <div class="stat"><b id="sChars">0</b><span>Знаци</span></div>
+                <div class="stat"><b id="sProg">0%</b><span>Напредък</span></div>
+                <div class="stat"><b id="sWpm">0</b><span>ДВМ</span></div>
+                <div class="stat"><b id="sErr">0</b><span>Грешки</span></div>
+                <div class="stat"><b id="sAcc">100%</b><span>Точност</span></div>
+                <div class="stat"><b id="sTime">00:00</b><span>Време</span></div>
+              </div>
+
+              <div class="target" id="target"></div>
+
+              <div class="inputbox">
+                <textarea id="typing" spellcheck="false" autocomplete="off" autocapitalize="off"
+                          aria-label="Поле за писане"></textarea>
+                <div class="hint" id="hint">Щракнете тук и започнете да пишете</div>
+              </div>
+
+              <div class="kbarea">
+                ${handSvg("L")}
+                <div class="kb" id="kb"></div>
+                ${handSvg("R")}
+              </div>
+            </div>
+
+            <div class="below">
+              <h3>Как се упражнява</h3>
+              <p>Пишете символите от горния ред. Грешен клавиш не мести курсора: натиснете правилния,
+                 за да продължите. Времето тръгва с първия натиснат клавиш. ДВМ означава думи в минута
+                 (5 знака = 1 дума).</p>
+              <p>Бутонът <kbd>Esc</kbd> рестартира упражнението. След края <kbd>Enter</kbd> отваря следващото.</p>
+            </div>`;
+
+          renderKeyboard();
+
+          const textarea = $("#typing");
+          textarea.addEventListener("keydown", onKeyDown);
+          textarea.addEventListener("input", onInput);
+          textarea.addEventListener("paste", (e) => e.preventDefault());
+          textarea.addEventListener("focus", () => ($("#hint").hidden = true));
+          textarea.addEventListener("blur", () => {
+            if (!exercise?.done) $("#hint").hidden = false;
+          });
+
+          startExercise(text);
+        }
+
+        /** Рисува екранната клавиатура. */
+        function renderKeyboard() {
+          const rowsHtml = KEYBOARD_ROWS.map((row) => {
+            const keysHtml = row.map(([code, normal, shifted, widthClass]) => {
+              const classes = ["key"];
+              if (widthClass) classes.push(widthClass);
+              if (HOME_KEYS.has(code)) classes.push("home");
+
+              let label;
+              if (shifted) {
+                // клавиш с два символа: горе със Shift, долу без
+                classes.push("dual");
+                label = `<span class="s">${shifted}</span><span class="n">${normal}</span>`;
+              } else if (normal.length === 1) {
+                label = `<span class="letter">${normal}</span>`;
+              } else {
+                label = normal; // Tab, Shift, Enter...
+              }
+              return `<div class="${classes.join(" ")}" data-code="${code}">${label}</div>`;
+            }).join("");
+
+            return `<div class="row">${keysHtml}</div>`;
+          }).join("");
+
+          $("#kb").innerHTML = rowsHtml;
+        }
+
+        /** Подготвя ново упражнение с дадения текст. */
+        function startExercise(text) {
+          stopTimer();
+          exercise = {
+            text,
+            pos: 0,
+            errors: 0,
+            wrongAt: -1,
+            missed: new Set(),
+            startTime: 0,
+            endTime: 0,
+            done: false,
+            spans: [],
+          };
+
+          // Всяка дума е в <span class="w">, за да не се разделя на два реда.
+          const escape = (ch) => (ch === "<" ? "&lt;" : ch === "&" ? "&amp;" : ch);
+          $("#target").innerHTML = text
+            .split(/( )/)
+            .map((part) => {
+              if (part === " ") return '<span class="c sp"> </span>';
+              const letters = [...part].map((ch) => `<span class="c">${escape(ch)}</span>`).join("");
+              return `<span class="w">${letters}</span>`;
+            })
+            .join("");
+          exercise.spans = [...document.querySelectorAll("#target .c")];
+
+          $("#trainer .result")?.remove();
+
+          const textarea = $("#typing");
+          textarea.value = "";
+          updateView();
+          updateStats();
+          textarea.focus({ preventScroll: true });
+          $("#hint").hidden = document.activeElement === textarea;
+        }
+
+        /* =====================================================================
+         * 8. ПИСАНЕ
+         * ===================================================================== */
+
+        const MODIFIER_KEYS = ["Shift", "CapsLock", "Control", "Alt", "Meta", "AltGraph"];
+
+        /** Кой символ е написан с това натискане (или null, ако не е символ). */
+        function charFromKeyEvent(e) {
+          if (inputMode === "sys") return e.key.length === 1 ? e.key : null;
+
+          const symbols = symbolsOfKey[e.code];
+          if (!symbols) return null;
+
+          if (isLetter(symbols.normal)) {
+            // Shift и Caps Lock се неутрализират взаимно
+            const capsLock = e.getModifierState?.("CapsLock") ?? false;
+            return e.shiftKey !== capsLock ? symbols.shifted : symbols.normal;
+          }
+          return e.shiftKey ? symbols.shifted : symbols.normal;
+        }
+
+        function onKeyDown(e) {
+          if (!exercise) return;
+
+          if (e.key === "Escape") {
+            e.preventDefault();
+            restartExercise();
+            return;
+          }
+
+          if (exercise.done) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              goToNextExercise();
+            } else if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+            }
+            return;
+          }
+
+          // Клавишни комбинации (Ctrl+R и т.н.) се оставят на браузъра.
+          if (e.ctrlKey || e.metaKey || (e.altKey && inputMode === "pos")) return;
+
+          if (MODIFIER_KEYS.includes(e.key)) {
+            flashKey(e.code, "pressed");
+            return;
+          }
+          if (["Backspace", "Enter", "Tab"].includes(e.key)) {
+            e.preventDefault();
+            flashKey(e.code, "pressed");
+            return;
+          }
+
+          // На телефон клавишът е неизвестен – символът идва в събитието "input".
+          if (e.key === "Unidentified" || e.key === "Process" || e.isComposing) return;
+
+          const ch = charFromKeyEvent(e);
+          if (ch === null) return;
+          e.preventDefault();
+          handleTypedChar(ch, e.code);
+        }
+
+        /** За екранни клавиатури (телефон): взима новите символи от полето. */
+        function onInput(e) {
+          if (!exercise) return;
+          const textarea = e.target;
+          const typedSoFar = exercise.text.slice(0, exercise.pos);
+
+          const newChars = textarea.value.startsWith(typedSoFar)
+            ? textarea.value.slice(typedSoFar.length)
+            : textarea.value.slice(-1);
+          textarea.value = typedSoFar;
+
+          for (const ch of newChars) {
+            if (exercise.done) break;
+            handleTypedChar(ch, keyOfChar[ch]?.code ?? null);
+          }
+        }
+
+        /** Проверява написания символ спрямо очаквания. */
+        function handleTypedChar(ch, code) {
+          if (exercise.done) return;
+          $("#hint").hidden = true;
+
+          // Времето тръгва с първото натискане.
+          if (!exercise.startTime) {
+            exercise.startTime = performance.now();
+            timerId = setInterval(updateStats, 250);
+          }
+
+          const expected = exercise.text[exercise.pos];
+          if (ch === expected) {
+            exercise.pos++;
+            exercise.wrongAt = -1;
+            $("#typing").value = exercise.text.slice(0, exercise.pos);
+            if (code) flashKey(code, "pressed");
+          } else {
+            exercise.errors++;
+            exercise.wrongAt = exercise.pos;
+            exercise.missed.add(exercise.pos);
+            if (code) flashKey(code, "wrong");
+            shakeInput();
+          }
+
+          updateView();
+          updateStats();
+          if (exercise.pos >= exercise.text.length) finishExercise();
+        }
+
+        function shakeInput() {
+          const textarea = $("#typing");
+          textarea.classList.remove("shake");
+          void textarea.offsetWidth; // рестартира CSS анимацията
+          textarea.classList.add("shake");
+        }
+
+        /** Кратко оцветява клавиш на екранната клавиатура. */
+        function flashKey(code, cssClass) {
+          const key = document.querySelector(`.key[data-code="${code}"]`);
+          if (!key) return;
+          key.classList.add(cssClass);
+          setTimeout(() => key.classList.remove(cssClass), cssClass === "wrong" ? 220 : 120);
+        }
+
+        /** Обновява оцветяването на текста, следващия клавиш и пръста. */
+        function updateView() {
+          const { spans, pos, wrongAt, missed } = exercise;
+
+          spans.forEach((span, i) => {
+            const classes = ["c"];
+            if (span.classList.contains("sp")) classes.push("sp");
+            if (i < pos) classes.push("done");
+            if (i < pos && missed.has(i)) classes.push("miss");
+            if (i === pos) classes.push("cur");
+            if (i === wrongAt) classes.push("bad");
+            span.className = classes.join(" ");
+          });
+
+          scrollTextToCursor();
+          highlightNextKey();
+        }
+
+        /** Превърта текста, така че текущият ред да е видим. */
+        function scrollTextToCursor() {
+          const current = exercise.spans[exercise.pos];
+          if (!current) return;
+          const box = $("#target");
+          const lineHeight = current.offsetHeight || 30;
+          const top = current.offsetTop - box.offsetTop;
+          box.scrollTop = Math.max(0, top - lineHeight * 0.4 - 10);
+        }
+
+        function highlightNextKey() {
+          document.querySelectorAll(".key.next").forEach((k) => k.classList.remove("next"));
+          document.querySelectorAll(".hand .dot").forEach((d) => d.setAttribute("visibility", "hidden"));
+          if (exercise.done) return;
+
+          const nextKey = keyOfChar[exercise.text[exercise.pos]];
+          if (!nextKey) return;
+
+          document.querySelector(`.key[data-code="${nextKey.code}"]`)?.classList.add("next");
+          const finger = fingerOfKey[nextKey.code];
+          showFingerDot(finger);
+
+          // Главна буква/символ: Shift се натиска с кутрето на другата ръка.
+          if (nextKey.shift) {
+            const leftHand = isLeftHand(finger);
+            const shiftCode = leftHand ? "ShiftRight" : "ShiftLeft";
+            document.querySelector(`.key[data-code="${shiftCode}"]`)?.classList.add("next");
+            showFingerDot(leftHand ? FINGER.RIGHT_PINKY : FINGER.LEFT_PINKY);
+          }
+        }
+
+        /** Показва зелена точка върху върха на пръста. */
+        function showFingerDot(finger) {
+          if (finger === undefined) return;
+          const leftHand = isLeftHand(finger);
+          // Дясната ръка е огледална, затова пръстите се броят наобратно.
+          const tipIndex = leftHand ? finger : FINGER.RIGHT_PINKY - finger;
+          const svg = document.querySelectorAll(".hand")[leftHand ? 0 : 1];
+          const dot = svg?.querySelector(".dot");
+          if (!dot) return;
+          dot.setAttribute("cx", FINGER_TIPS[tipIndex][0]);
+          dot.setAttribute("cy", FINGER_TIPS[tipIndex][1]);
+          dot.setAttribute("visibility", "visible");
+        }
+
+        /* =====================================================================
+         * 9. СТАТИСТИКА И КРАЙ
+         * ===================================================================== */
+
+        /** Изчислява скорост (думи в минута), точност, време и напредък. */
+        function calculateStats() {
+          const { pos, errors, text, startTime, endTime } = exercise;
+          const elapsedMs = startTime ? (endTime || performance.now()) - startTime : 0;
+          const minutes = elapsedMs / 60000;
+
+          // 1 дума = 5 знака. Под ~1 секунда скоростта е безсмислена.
+          const wpm = minutes > 0.02 ? Math.round(pos / 5 / minutes) : 0;
+          const accuracy = pos + errors > 0 ? Math.round((100 * pos) / (pos + errors)) : 100;
+          const progressPct = Math.round((100 * pos) / text.length);
+
+          const totalSeconds = Math.floor(elapsedMs / 1000);
+          const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+          const ss = String(totalSeconds % 60).padStart(2, "0");
+
+          return { wpm, accuracy, progressPct, time: `${mm}:${ss}` };
+        }
+
+        function updateStats() {
+          if (!exercise || !$("#sChars")) return;
+          const stats = calculateStats();
+          $("#sChars").textContent = exercise.pos;
+          $("#sProg").textContent = stats.progressPct + "%";
+          $("#sWpm").textContent = stats.wpm;
+          $("#sErr").textContent = exercise.errors;
+          $("#sAcc").textContent = stats.accuracy + "%";
+          $("#sTime").textContent = stats.time;
+        }
+
+        function stopTimer() {
+          if (timerId) clearInterval(timerId);
+          timerId = null;
+        }
+
+        /** Край на упражнението: запазва резултата и показва прозорец с него. */
+        function finishExercise() {
+          exercise.done = true;
+          exercise.endTime = performance.now();
+          stopTimer();
+          updateStats();
+          updateView();
+
+          const stats = calculateStats();
+          const key = routeKey(route);
+          const previousBest = progress[key];
+          if (!previousBest || stats.wpm > previousBest.wpm) {
+            progress[key] = { wpm: stats.wpm, acc: stats.accuracy };
+          }
+          saveProgress();
+          renderSidebar();
+
+          const best = progress[key];
+          const nextLabel = route.kind === "speed" ? "Нов текст" : "Следващо";
+
+          const resultBox = document.createElement("div");
+          resultBox.className = "result";
+          resultBox.innerHTML = `
+            <div class="card">
+              <h3>Упражнението е завършено</h3>
+              <div class="nums">
+                <div><b>${stats.wpm}</b><span>ДВМ</span></div>
+                <div><b>${stats.accuracy}%</b><span>Точност</span></div>
+                <div><b>${exercise.errors}</b><span>Грешки</span></div>
+                <div><b>${stats.time}</b><span>Време</span></div>
+              </div>
+              <p class="best">Най-добър резултат: ${best.wpm} ДВМ, ${best.acc}% точност</p>
+              <div class="btns">
+                <button class="btn ghost" id="btnRepeat">Повтори (Esc)</button>
+                <button class="btn" id="btnNext">${nextLabel} (Enter)</button>
+              </div>
+            </div>`;
+          $("#trainer").appendChild(resultBox);
+
+          $("#btnRepeat").addEventListener("click", restartExercise);
+          $("#btnNext").addEventListener("click", goToNextExercise);
+          $("#typing").focus({ preventScroll: true });
+        }
+
+        /** Започва същото упражнение отначало (с нов случаен текст). */
+        function restartExercise() {
+          if (!exercise) return;
+          if (route.kind === "speed") startExercise(exercise.text);
+          else startExercise(makeExerciseText(route.lesson, route.exercise));
+        }
+
+        let speedTextIndex = Math.floor(Math.random() * SPEED_TEXTS.length);
+
+        function goToNextExercise() {
+          if (route.kind === "speed") {
+            speedTextIndex = (speedTextIndex + 1) % SPEED_TEXTS.length;
+            startExercise(SPEED_TEXTS[speedTextIndex]);
+            return;
+          }
+
+          let { lesson, exercise: ex } = route;
+          ex++;
+          if (ex >= EXERCISE_TITLES.length) {
+            ex = 0;
+            lesson = (lesson + 1) % LESSONS.length;
+          }
+          location.hash = exerciseHash(lesson, ex);
+        }
+
+        /* =====================================================================
+         * 10. СТАРТИРАНЕ
+         * ===================================================================== */
+
+        /** Показва страницата според адреса. */
+        function render() {
+          route = parseHash();
+          renderSidebar();
+
+          if (route.kind === "home") {
+            renderHome();
+          } else if (route.kind === "speed") {
+            renderTrainer("Тест за скорост", SPEED_TEXTS[speedTextIndex]);
+          } else {
+            renderTrainer(
+              exerciseTitle(route.lesson, route.exercise),
+              makeExerciseText(route.lesson, route.exercise),
+            );
+          }
+          window.scrollTo(0, 0);
+        }
+
+        window.addEventListener("hashchange", render);
+
+        // Ако полето за писане не е на фокус, натиснатият клавиш се пренасочва към него.
+        document.addEventListener("keydown", (e) => {
+          const textarea = $("#typing");
+          if (!textarea || document.activeElement === textarea) return;
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const focusedTag = document.activeElement.tagName;
+          if (["INPUT", "SELECT", "TEXTAREA", "BUTTON", "A"].includes(focusedTag)) return;
+
+          textarea.focus({ preventScroll: true });
+          onKeyDown(e);
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>
